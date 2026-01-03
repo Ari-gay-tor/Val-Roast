@@ -1,0 +1,37 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+import { fetchPlayerStats } from "./services/valorantApi.js";
+import { normalizeStats } from "./utils/normalizeStats.js";
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("🔥 Val-Roast API is alive");
+});
+
+app.get("/api/player/:name/:tag", async (req, res) => {
+  try {
+    const { name, tag } = req.params;
+
+    const rawData = await fetchPlayerStats(name, tag);
+    const stats = normalizeStats(rawData);
+
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`Val-Roast server running on port ${PORT}`);
+});

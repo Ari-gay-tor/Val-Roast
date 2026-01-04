@@ -7,17 +7,34 @@ export function normalizeStats(rawData) {
 
   const { account, mmr } = rawData;
 
+  const rr = mmr.ranking_in_tier ?? 0;
+  const lastChange = mmr.mmr_change_to_last_game ?? 0;
+
   return {
-    username: `${account.name}#${account.tag}`,
-    level: account.account_level ?? "Unknown",
+    profile: {
+      username: `${account.name}#${account.tag}`,
+      level: account.account_level ?? "Unknown"
+    },
 
-    rank: mmr.currenttierpatched ?? "Unranked",
-    rr: mmr.ranking_in_tier ?? 0,
-    elo: mmr.elo ?? null,
+    rank: {
+      current: mmr.currenttierpatched ?? "Unranked",
+      rr,
+      elo: mmr.elo ?? null,
+      peak: mmr.highest_rank?.patched_tier ?? "Unknown"
+    },
 
-    lastGameRRChange: mmr.mmr_change_to_last_game ?? 0,
-    peakRank: mmr.highest_rank
-      ? mmr.highest_rank.patched_tier
-      : "Unknown"
+    momentum: {
+      lastGame: lastChange,
+      trend:
+        lastChange > 0 ? "climbing" :
+        lastChange < 0 ? "falling" :
+        "stagnant"
+    },
+
+    roastFuel: {
+      hardstuck: rr < 30,
+      boosted: rr > 80 && lastChange < 0,
+      struggling: lastChange < -15
+    }
   };
 }

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import { fetchPlayerStats } from "./services/valorantApi.js";
 import { normalizeStats } from "./utils/normalizeStats.js";
+import { generateRoast } from "./roast/roastEngine.js";
 
 dotenv.config();
 
@@ -24,6 +25,23 @@ app.get("/api/player/:name/:tag", async (req, res) => {
     const stats = normalizeStats(rawData);
 
     res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+app.get("/api/roast/:name/:tag", async (req, res) => {
+  try {
+    const { name, tag } = req.params;
+
+    const rawData = await fetchPlayerStats(name, tag);
+    const stats = normalizeStats(rawData);
+    const roast = generateRoast(stats);
+
+    res.json({
+      stats,
+      roast
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
